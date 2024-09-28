@@ -1,0 +1,78 @@
+- name: Get sury rep key
+  ansible.builtin.apt_key:
+    url: https://packages.sury.org/php/apt.gpg
+    state: present
+
+- name: Add sury rep
+  ansible.builtin.apt_repository:
+    repo: "deb https://packages.sury.org/php/ {{ ansible_distribution_release }} main"
+    state: present
+    update_cache: true
+
+- name: Install php-fpm and 5.6-7.4 wordpress modules
+  ansible.builtin.apt:
+    state: present
+    name:
+      - "php{{ item }}-fpm"
+      - "php{{ item }}-json"
+      - "php{{ item }}-igbinary"
+      - "php{{ item }}-imagick"
+      - "php{{ item }}-intl"
+      - "php{{ item }}-mbstring"
+      - "php{{ item }}-xml"
+      - "php{{ item }}-zip"
+  loop:
+    - 5.6
+    - 7.0
+    - 7.1
+    - 7.2
+    - 7.3
+    - 7.4
+
+- name: Install php-fpm and 8.0-8.2 wordpress modules
+  ansible.builtin.apt:
+    state: present
+    name:
+      - "php{{ item }}-fpm"
+      - "php{{ item }}-igbinary"
+      - "php{{ item }}-imagick"
+      - "php{{ item }}-intl"
+      - "php{{ item }}-mbstring"
+      - "php{{ item }}-xml"
+      - "php{{ item }}-zip"
+  loop:
+    - 8.0
+    - 8.1
+    - 8.2
+
+- name: Edit max time
+  ansible.builtin.lineinfile:
+    path: "/etc/php/{{ item }}/fpm/php.ini"
+    regexp: "^max_execution_time = .*"
+    line: "max_execution_time=60"
+    state: present
+  loop:
+    - 5.6
+    - 7.0
+    - 7.1
+    - 7.2
+    - 7.3
+    - 7.4
+    - 8.0
+    - 8.1
+    - 8.2
+
+- name: Restart all php-fpm
+  ansible.builtin.systemd_service:
+    state: restarted
+    name: "{{ item }}"
+  loop:
+    - php5.6-fpm
+    - php7.0-fpm
+    - php7.1-fpm
+    - php7.2-fpm
+    - php7.3-fpm
+    - php7.4-fpm
+    - php8.0-fpm
+    - php8.1-fpm
+    - php8.2-fpm

@@ -1,0 +1,9 @@
+CentOS9:
+  hosts:
+    CentOS9_srv1:
+      ansible_host: 192.168.205.134
+
+Debian:
+  hosts:
+    Debian_srv1:
+      ansible_host: 192.168.205.133

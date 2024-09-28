@@ -1,0 +1,98 @@
+- name: Add php repo
+  ansible.builtin.dnf:
+    name:
+    - "https://rpms.remirepo.net/enterprise/remi-release-9.rpm"
+    - "https://pkgs.sysadmins.ws/el9/base/x86_64/raven-release.el9.noarch.rpm"
+    state: present
+    disable_gpg_check: true
+    update_cache: true
+
+- name: Install php-fpm and 5.6 wordpress modules
+  ansible.builtin.dnf:
+    enablerepo: "raven-modular"
+    state: present
+    name:
+      - "php56-php-fpm"
+      - "php56-php-json"
+      - "https://www.rpmfind.net/linux/remi/enterprise/8/remi/x86_64/php56-php-pecl-igbinary-2.0.8-1.el8.remi.x86_64.rpm"
+      - "php56-php-imagick"
+      - "php56-php-intl"
+      - "php56-php-mbstring"
+      - "php56-php-xml"
+      - "php56-php-zip"
+    disable_gpg_check: true
+
+- name: Install php-fpm and 7.0-7.4 wordpress modules
+  ansible.builtin.dnf:
+    enablerepo: "raven-modular"
+    state: present
+    name:
+      - "php{{ item }}-php-fpm"
+      - "php{{ item }}-php-json"
+      - "php{{ item }}-php-igbinary"
+      - "php{{ item }}-php-imagick"
+      - "php{{ item }}-php-intl"
+      - "php{{ item }}-php-mbstring"
+      - "php{{ item }}-php-xml"
+      - "php{{ item }}-php-zip"
+  loop:
+    - 70
+    - 71
+    - 72
+    - 73
+    - 74
+
+- name: Install php-fpm and 8.0-8.2 wordpress modules
+  ansible.builtin.dnf:
+    state: present
+    name:
+      - "php{{ item }}-php-fpm"
+      - "php{{ item }}-php-igbinary"
+      - "php{{ item }}-php-imagick"
+      - "php{{ item }}-php-intl"
+      - "php{{ item }}-php-mbstring"
+      - "php{{ item }}-php-xml"
+      - "php{{ item }}-php-zip"
+  loop:
+    - 80
+    - 81
+    - 82
+
+- name: Edit max time 72
+  ansible.builtin.lineinfile:
+    path: "/etc/opt/remi/scls/php72/php.ini"
+    regexp: "^max_execution_time = .*"
+    line: "max_execution_time=60"
+    state: present
+
+
+- name: Edit max time
+  ansible.builtin.lineinfile:
+    path: "/etc/opt/remi/php{{ item }}/php.ini"
+    regexp: "^max_execution_time = .*"
+    line: "max_execution_time=60"
+    state: present
+  loop:
+    - 56
+    - 70
+    - 71
+    - 73
+    - 74
+    - 80
+    - 81
+    - 82
+
+- name: Restart all php-fpm
+  ansible.builtin.systemd_service:
+    state: restarted
+    name: "{{ item }}"
+  loop:
+    - php56-php-fpm
+    - php70-php-fpm
+    - php71-php-fpm
+    - php72-php-fpm
+    - php73-php-fpm
+    - php74-php-fpm
+    - php80-php-fpm
+    - php81-php-fpm
+    - php82-php-fpm

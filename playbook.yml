@@ -1,0 +1,21 @@
+---
+
+- name: Intall php-fpm and modules for wordpress
+  hosts:
+    - CentOS9
+    - Debian
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Install on debian
+      ansible.builtin.import_tasks:
+        file: tasks/Debian.yml
+      when: ansible_distribution == "Debian"
+
+    - name: Install on centos9
+      ansible.builtin.import_tasks:
+        file: tasks/CentOS9.yml
+      when:
+        - ansible_distribution == "CentOS"
+        - ansible_distribution_major_version == "9"
